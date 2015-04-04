@@ -17,6 +17,37 @@ def ldaLearn(X,y):
     
     # IMPLEMENT THIS METHOD
     
+    #Find number of k's
+    numK = 0
+    foundK = False
+    ks_found = np.array([])
+    ks_found = np.zeros(y.shape[0])
+    for i in range(y.shape[0]):
+        for j in range(ks_found.shape[0]):
+            if y[i] == ks_found[j]:
+                 foundK = True
+        if foundK == False:
+                 numK = numK + 1
+                 ks_found[numK] = y[i]
+        foundK = False
+
+    #Create Average Matrix
+    means = np.zeros((X.shape[1],numK))
+    
+    countKs = np.zeros(numK)
+    for n in range(X.shape[0]):
+        kLabel = int(y[n]) - 1
+        for d in range(X.shape[1]):
+            means[d][kLabel] = means[d][kLabel] + X[n][d]
+            countKs[kLabel] = countKs[kLabel] + 1
+
+    for d in range(means.shape[0]):
+        for k in range(means.shape[1]):
+            means[d][k] = means[d][k] / countKs[k]  
+ 
+    print (means)
+                
+
     return means,covmat
 
 def qdaLearn(X,y):
@@ -29,7 +60,37 @@ def qdaLearn(X,y):
     # covmats - A list of k d x d learnt covariance matrices for each of the k classes
     
     # IMPLEMENT THIS METHOD
-    
+
+    #Find number of k's
+    numK = 0
+    foundK = False
+    ks_found = np.array([])
+    ks_found = np.zeros(y.shape[0])
+    for i in range(y.shape[0]):
+        for j in range(ks_found.shape[0]):
+            if y[i] == ks_found[j]:
+                 foundK = True
+        if foundK == False:
+                 numK = numK + 1
+                 ks_found[numK] = y[i]
+        foundK = False
+   
+    #Create Average Matrix
+    means = np.zeros((X.shape[1],numK))
+
+    countKs = np.zeros(numK)
+    for n in range(X.shape[0]):
+        kLabel = int(y[n]) - 1
+        for d in range(X.shape[1]):
+            means[d][kLabel] = means[d][kLabel] + X[n][d]
+            countKs[kLabel] = countKs[kLabel] + 1
+
+    for d in range(means.shape[0]):
+        for k in range(means.shape[1]):
+            means[d][k] = means[d][k] / countKs[k]
+
+    print (means)
+
     return means,covmats
 
 def ldaTest(means,covmat,Xtest,ytest):
@@ -110,9 +171,9 @@ def mapNonLinear(x,p):
 X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')            
 
 # LDA
-means,covmat = ldaLearn(X,y)
-ldaacc = ldaTest(means,covmat,Xtest,ytest)
-print('LDA Accuracy = '+str(ldaacc))
+#means,covmat = ldaLearn(X,y)
+#ldaacc = ldaTest(means,covmat,Xtest,ytest)
+#print('LDA Accuracy = '+str(ldaacc))
 # QDA
 means,covmats = qdaLearn(X,y)
 qdaacc = qdaTest(means,covmats,Xtest,ytest)
