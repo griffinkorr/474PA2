@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
 from math import sqrt
+from math import pi
 import scipy.io
 import matplotlib.pyplot as plt
 import pickle
@@ -17,13 +18,17 @@ def ldaLearn(X,y):
     
     # IMPLEMENT THIS METHOD
     
+    #Define Array Dimensions
+    numN = X.shape[0]
+    numD = X.shape[1]
+
     #Find number of k's
     numK = 0
     foundK = False
     ks_found = np.array([])
-    ks_found = np.zeros(y.shape[0])
-    for i in range(y.shape[0]):
-        for j in range(ks_found.shape[0]):
+    ks_found = np.zeros(numN)
+    for i in range(numN):
+        for j in range(numN):
             if y[i] == ks_found[j]:
                  foundK = True
         if foundK == False:
@@ -32,17 +37,17 @@ def ldaLearn(X,y):
         foundK = False
 
     #Create Average Matrix
-    means = np.zeros((X.shape[1],numK))
+    means = np.zeros((numD,numK))
     
     countKs = np.zeros(numK)
-    for n in range(X.shape[0]):
+    for n in range(numN):
         kLabel = int(y[n]) - 1
-        for d in range(X.shape[1]):
+        for d in range(numD):
             means[d][kLabel] = means[d][kLabel] + X[n][d]
             countKs[kLabel] = countKs[kLabel] + 1
 
-    for d in range(means.shape[0]):
-        for k in range(means.shape[1]):
+    for d in range(numN):
+        for k in range(numK):
             means[d][k] = means[d][k] / countKs[k]  
  
     print (means)
@@ -61,13 +66,18 @@ def qdaLearn(X,y):
     
     # IMPLEMENT THIS METHOD
 
+
+    #Define Array Dimensions
+    numN = X.shape[0]
+    numD = X.shape[1]
+
     #Find number of k's
     numK = 0
     foundK = False
     ks_found = np.array([])
-    ks_found = np.zeros(y.shape[0])
-    for i in range(y.shape[0]):
-        for j in range(ks_found.shape[0]):
+    ks_found = np.zeros(numN)
+    for i in range(numN):
+        for j in range(numN):
             if y[i] == ks_found[j]:
                  foundK = True
         if foundK == False:
@@ -76,20 +86,32 @@ def qdaLearn(X,y):
         foundK = False
    
     #Create Average Matrix
-    means = np.zeros((X.shape[1],numK))
+    means = np.zeros((numD,numK))
 
     countKs = np.zeros(numK)
-    for n in range(X.shape[0]):
+    for n in range(numN):
         kLabel = int(y[n]) - 1
-        for d in range(X.shape[1]):
+        for d in range(numD):
             means[d][kLabel] = means[d][kLabel] + X[n][d]
             countKs[kLabel] = countKs[kLabel] + 1
 
-    for d in range(means.shape[0]):
-        for k in range(means.shape[1]):
+    for d in range(numD):
+        for k in range(numK):
             means[d][k] = means[d][k] / countKs[k]
 
     print (means)
+
+    #Create Covmariance Matrix
+    covmats = np.zeros(((numK,numD,numD)))
+    for k in range(numK):
+        for d in range(numD):
+            for n in range(numN):
+                covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
+            covmats[k][d][d] = covmats[k][d][d] / numN
+     
+    print(covmats)
+                    
+
 
     return means,covmats
 
@@ -113,6 +135,67 @@ def qdaTest(means,covmats,Xtest,ytest):
     # acc - A scalar accuracy value
     
     # IMPLEMENT THIS METHOD
+
+   
+    #Define Array Dimensions
+    numN = Xtest.shape[0]
+    numD = Xtest.shape[1]
+    numK = means.shape[1]
+
+
+    #Define Function Matrix
+    functionMatrix = np.zeros(((numK,numK,50)))
+    for k in range(numK):
+        j = k
+        for j in range(numK):
+            testReturn = 1
+            linespace = np.linspace(0,10,50,endpoint=True)
+
+            #SIGMA
+            covmat = np.zeros((numD,numD))
+            covmat = covmats[k]
+            mdet = np.linalg.det(covmat)            
+
+            #MEW
+            mew = np.zeros(numD)
+            meansT = means.T
+            mew = meansT[k]
+
+            #FUNCTION MATRIX
+            for x in range(50):
+                firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2)) 
+                secondHalf = firstHalf * np.e**((-1*(linespace[x]-mew).T * covmat**-1 * (linespace[x]-mew))/2)
+                functionMatrix[k][j][x] = firstHalf * secondHalf       
+
+    testLabel = np.zeros(numN)
+    for n in range(numN):
+        scoreKeeper = np.zeros(numK)
+        for k in range(numK):
+            j = k
+            for j in range(numK):
+                #boundryLine = functionMatrix[k][j]
+                #if (x,y) is within boundary
+                #       scoreKeeper[k]++
+                #else 
+                #       scoreKeeper[j]++
+                test = 1
+                
+        score = 0
+        classK = 0
+        for k in range(numK):
+            if scoreKeeper[k] > score:
+               classK = k
+               score = scoreKeeper[k]
+        testLabel[n] = classK
+  
+    correctCount = 0
+    for n in range(numN):
+        if testLabel[n] == ytest[n]:
+              correctCount = correctCount + 1
+
+    acc = correctCount/numN
+
+
     return acc
 
 def learnOLERegression(X,y):
