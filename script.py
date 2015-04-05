@@ -106,8 +106,9 @@ def qdaLearn(X,y):
     for k in range(numK):
         for d in range(numD):
             for n in range(numN):
-                covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
-            covmats[k][d][d] = covmats[k][d][d] / numN
+                if int(y[n]) == k:
+                   covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
+            covmats[k][d][d] = covmats[k][d][d] / countKs[k]
      
     print(covmats)
                     
@@ -171,7 +172,7 @@ def qdaTest(means,covmats,Xtest,ytest):
 
             #print(Xtest[0])
             #print(mew)        
-            print(mdet)
+            #print(mdet)
  
             firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
             secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
@@ -180,10 +181,10 @@ def qdaTest(means,covmats,Xtest,ytest):
 
             ks[k] = np.linalg.det(secondHalf)
            
-        #print(ks)
+        print(ks)
         index = np.argmax(ks)
-        #print(index+1)
-        #print(int(ytest[n]))      
+        print(index+1)
+        print(int(ytest[n]))      
      
     #print("Y")
     #print(ytest[2])
