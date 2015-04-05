@@ -115,6 +115,19 @@ def qdaLearn(X,y):
 
     return means,covmats
 
+def functionMatrix (means,covmat,numD,k,x):
+    # Inputs
+    # means, covmats - parameters of the QDA model
+    # numD - Number of attributes
+    # k - current class
+    # x - current test example
+    # Outputs
+    # funVal - A scalar probability value
+
+    funVal = 1
+
+    return funVal
+
 def ldaTest(means,covmat,Xtest,ytest):
     # Inputs
     # means, covmat - parameters of the LDA model
@@ -142,30 +155,64 @@ def qdaTest(means,covmats,Xtest,ytest):
     numD = Xtest.shape[1]
     numK = means.shape[1]
 
+    for n in range(numN):
+        ks = np.zeros(numK)
+        for k in range(numK):
+            #print("K")
+            #print(k)
 
-    #Define Function Matrix
-    functionMatrix = np.zeros(((numK,numK,50)))
-    for k in range(numK):
-        j = k
-        for j in range(numK):
-            testReturn = 1
-            linespace = np.linspace(0,10,50,endpoint=True)
-
-            #SIGMA
             covmat = np.zeros((numD,numD))
             covmat = covmats[k]
-            mdet = np.linalg.det(covmat)            
+            mdet = np.linalg.det(covmat)
 
-            #MEW
             mew = np.zeros(numD)
             meansT = means.T
             mew = meansT[k]
 
+            #print(Xtest[0])
+            #print(mew)        
+            print(mdet)
+ 
+            firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
+            secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
+            #print("Mult")
+            #print(np.linalg.det(secondHalf))
+
+            ks[k] = np.linalg.det(secondHalf)
+           
+        #print(ks)
+        index = np.argmax(ks)
+        #print(index+1)
+        #print(int(ytest[n]))      
+     
+    #print("Y")
+    #print(ytest[2])
+
+    #Define Function Matrix
+    #functionMatrix = np.zeros(((numK,numK,50)))
+    #for k in range(numK):
+    #    j = k
+    #    for j in range(numK):
+    #        testReturn = 1
+    #        linespace = np.linspace(0,10,50,endpoint=True)
+
+            #SIGMA
+    #        covmat = np.zeros((numD,numD))
+    #        covmat = covmats[k]
+    #        mdet = np.linalg.det(covmat)            
+
+            #MEW
+    #        mew = np.zeros(numD)
+    #        meansT = means.T
+    #        mew = meansT[k]
+
             #FUNCTION MATRIX
-            for x in range(50):
-                firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2)) 
-                secondHalf = firstHalf * np.e**((-1*(linespace[x]-mew).T * covmat**-1 * (linespace[x]-mew))/2)
-                functionMatrix[k][j][x] = firstHalf * secondHalf       
+    #        for x in range(50):
+    #            firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2)) 
+    #            secondHalf = firstHalf * np.e**((-1*(linespace[x]-mew).T * covmat**-1 * (linespace[x]-mew))/2)
+    #            functionMatrix[k][j][x] = firstHalf * secondHalf       
+
+   
 
     testLabel = np.zeros(numN)
     for n in range(numN):
