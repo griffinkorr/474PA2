@@ -129,17 +129,23 @@ def ldaTest(means,covmat,Xtest,ytest):
     numD = Xtest.shape[1]
     numK = means.shape[1]
 
+    print(covmat)
+
     acc = 0
     for n in range(numN):
         ks = np.zeros(numK)
         for k in range(numK):
 
             mdet = np.linalg.det(covmat)
+            #print("Mdet")
+            #print(mdet)
 
             if mdet != 0:
                mew = np.zeros(numD)
                meansT = means.T
                mew = meansT[k]
+               #print("Mew")
+               #print(mew)
 
                firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
                secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
@@ -170,6 +176,8 @@ def qdaTest(means,covmats,Xtest,ytest):
     numN = Xtest.shape[0]
     numD = Xtest.shape[1]
     numK = means.shape[1]
+
+    #print(covmats)
 
     acc = 0
     for n in range(numN):
@@ -206,7 +214,13 @@ def learnOLERegression(X,y):
     # y = N x 1                                                               
     # Output: 
     # w = d x 1                                                                
-    # IMPLEMENT THIS METHOD                                                   
+    # IMPLEMENT THIS METHOD 
+            
+    w = (X.T * X)
+    
+
+    print(w)
+                                  
     return w
 
 def learnRidgeERegression(X,y,lambd):
