@@ -46,7 +46,7 @@ def qdaLearn(X,y):
         kLabel = int(y[n]) - 1
         for d in range(numD):
             means[d][kLabel] = means[d][kLabel] + X[n][d]
-            countKs[kLabel] = countKs[kLabel] + 1
+        countKs[kLabel] = countKs[kLabel] + 1
 
     for d in range(numD):
         for k in range(numK):
@@ -59,7 +59,7 @@ def qdaLearn(X,y):
             for n in range(numN):
                 if int(y[n]-1) == k:
                    covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
-            covmats[k][d][d] = covmats[k][d][d] / (countKs[k]/2)
+            covmats[k][d][d] = covmats[k][d][d] / countKs[k]
                     
     return means,covmats
 
@@ -98,7 +98,7 @@ def ldaLearn(X,y):
         kLabel = int(y[n]) - 1
         for d in range(numD):
             means[d][kLabel] = means[d][kLabel] + X[n][d]
-            countKs[kLabel] = countKs[kLabel] + 1
+        countKs[kLabel] = countKs[kLabel] + 1
 
     for d in range(numD):
         for k in range(numK):
@@ -109,9 +109,9 @@ def ldaLearn(X,y):
     for k in range(numK):
         for d in range(numD):
             for n in range(numN):
-                   if k == y[n]:
+                   if k+1 == y[n]:
                         covmat[d][d] = covmat[d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
-            covmat[d][d] = covmat[d][d] / numN
+            covmat[d][d] = covmat[d][d] / countKs[k]
                     
     return means,covmat
 
