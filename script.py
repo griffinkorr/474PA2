@@ -100,13 +100,14 @@ def ldaTest(means,covmat,Xtest,ytest):
 
             mdet = np.linalg.det(covmat)
 
-            mew = np.zeros(numD)
-            meansT = means.T
-            mew = meansT[k]
+            if mdet != 0:
+               mew = np.zeros(numD)
+               meansT = means.T
+               mew = meansT[k]
 
-            firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
-            secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
-            ks[k] = np.linalg.det(secondHalf)
+               firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
+               secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
+               ks[k] = np.linalg.det(secondHalf)
 
         index = np.argmax(ks)
 
@@ -143,13 +144,15 @@ def qdaTest(means,covmats,Xtest,ytest):
             covmat = covmats[k]
             mdet = np.linalg.det(covmat)
 
-            mew = np.zeros(numD)
-            meansT = means.T
-            mew = meansT[k]
+            if mdet != 0:
+
+                mew = np.zeros(numD)
+                meansT = means.T
+                mew = meansT[k]
  
-            firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
-            secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
-            ks[k] = np.linalg.det(secondHalf)
+                firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
+                secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
+                ks[k] = np.linalg.det(secondHalf)
            
         index = np.argmax(ks) 
 
