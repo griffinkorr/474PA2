@@ -73,11 +73,47 @@ def ldaLearn(X,y):
     # covmat - A single d x d learnt covariance matrix 
 
     # IMPLEMENT THIS METHOD
+    numN = X.shape[0]
+    numD = X.shape[1]
 
-    means,covmat = qdaLearn(X,y)
+    #Find number of k's
+    numK = 0
+    foundK = False
+    ks_found = np.array([])
+    ks_found = np.zeros(numN)
+    for i in range(numN):
+        for j in range(numN):
+            if y[i] == ks_found[j]:
+                 foundK = True
+        if foundK == False:
+                 numK = numK + 1
+                 ks_found[numK] = y[i]
+        foundK = False
+   
+    #Create Average Matrix
+    means = np.zeros((numD,numK))
 
+    countKs = np.zeros(numK)
+    for n in range(numN):
+        kLabel = int(y[n]) - 1
+        for d in range(numD):
+            means[d][kLabel] = means[d][kLabel] + X[n][d]
+            countKs[kLabel] = countKs[kLabel] + 1
 
-    return means,((covmat[0] + covmat[1] + covmat[2] + covmat[3] + covmat[4])/5)
+    for d in range(numD):
+        for k in range(numK):
+            means[d][k] = means[d][k] / countKs[k]
+
+    #Create Covmariance Matrix
+    covmat = np.zeros(((numD,numD)))
+    for k in range(numK):
+        for d in range(numD):
+            for n in range(numN):
+                   if k == y[n]:
+                        covmat[d][d] = covmat[d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
+            covmat[d][d] = covmat[d][d] / numN
+                    
+    return means,covmat
 
 def ldaTest(means,covmat,Xtest,ytest):
     # Inputs
