@@ -6,54 +6,7 @@ from math import pi
 import scipy.io
 import matplotlib.pyplot as plt
 import pickle
-
-def ldaLearn(X,y):
-    # Inputs
-    # X - a N x d matrix with each row corresponding to a training example
-    # y - a N x 1 column vector indicating the labels for each training example
-    #
-    # Outputs
-    # means - A d x k matrix containing learnt means for each of the k classes
-    # covmat - A single d x d learnt covariance matrix 
-    
-    # IMPLEMENT THIS METHOD
-    
-    #Define Array Dimensions
-    numN = X.shape[0]
-    numD = X.shape[1]
-
-    #Find number of k's
-    numK = 0
-    foundK = False
-    ks_found = np.array([])
-    ks_found = np.zeros(numN)
-    for i in range(numN):
-        for j in range(numN):
-            if y[i] == ks_found[j]:
-                 foundK = True
-        if foundK == False:
-                 numK = numK + 1
-                 ks_found[numK] = y[i]
-        foundK = False
-
-    #Create Average Matrix
-    means = np.zeros((numD,numK))
-    
-    countKs = np.zeros(numK)
-    for n in range(numN):
-        kLabel = int(y[n]) - 1
-        for d in range(numD):
-            means[d][kLabel] = means[d][kLabel] + X[n][d]
-            countKs[kLabel] = countKs[kLabel] + 1
-
-    for d in range(numN):
-        for k in range(numK):
-            means[d][k] = means[d][k] / countKs[k]  
- 
-    print (means)
                 
-
-    return means,covmat
 
 def qdaLearn(X,y):
     # Inputs
@@ -99,35 +52,32 @@ def qdaLearn(X,y):
         for k in range(numK):
             means[d][k] = means[d][k] / countKs[k]
 
-    print (means)
-
     #Create Covmariance Matrix
     covmats = np.zeros(((numK,numD,numD)))
     for k in range(numK):
         for d in range(numD):
             for n in range(numN):
-                if int(y[n]) == k:
+                if int(y[n]-1) == k:
                    covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
-            covmats[k][d][d] = covmats[k][d][d] / countKs[k]
-     
-    print(covmats)
+            covmats[k][d][d] = covmats[k][d][d] / (countKs[k]/2)
                     
-
-
     return means,covmats
 
-def functionMatrix (means,covmat,numD,k,x):
+def ldaLearn(X,y):
     # Inputs
-    # means, covmats - parameters of the QDA model
-    # numD - Number of attributes
-    # k - current class
-    # x - current test example
+    # X - a N x d matrix with each row corresponding to a training example
+    # y - a N x 1 column vector indicating the labels for each training example
+    #
     # Outputs
-    # funVal - A scalar probability value
+    # means - A d x k matrix containing learnt means for each of the k classes
+    # covmat - A single d x d learnt covariance matrix 
 
-    funVal = 1
+    # IMPLEMENT THIS METHOD
 
-    return funVal
+    means,covmat = qdaLearn(X,y)
+
+
+    return means,((covmat[0] + covmat[1] + covmat[2] + covmat[3] + covmat[4])/5)
 
 def ldaTest(means,covmat,Xtest,ytest):
     # Inputs
@@ -138,6 +88,34 @@ def ldaTest(means,covmat,Xtest,ytest):
     # acc - A scalar accuracy value
     
     # IMPLEMENT THIS METHOD
+    #Define Array Dimensions
+    numN = Xtest.shape[0]
+    numD = Xtest.shape[1]
+    numK = means.shape[1]
+
+    acc = 0
+    for n in range(numN):
+        ks = np.zeros(numK)
+        for k in range(numK):
+
+            mdet = np.linalg.det(covmat)
+
+            mew = np.zeros(numD)
+            meansT = means.T
+            mew = meansT[k]
+
+            firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
+            secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
+            ks[k] = np.linalg.det(secondHalf)
+
+        index = np.argmax(ks)
+
+        if int(ytest[n]) == index+1:
+           acc = acc+1
+
+    acc = acc/n
+
+
     return acc
 
 def qdaTest(means,covmats,Xtest,ytest):
@@ -156,11 +134,10 @@ def qdaTest(means,covmats,Xtest,ytest):
     numD = Xtest.shape[1]
     numK = means.shape[1]
 
+    acc = 0
     for n in range(numN):
         ks = np.zeros(numK)
         for k in range(numK):
-            #print("K")
-            #print(k)
 
             covmat = np.zeros((numD,numD))
             covmat = covmats[k]
@@ -169,79 +146,17 @@ def qdaTest(means,covmats,Xtest,ytest):
             mew = np.zeros(numD)
             meansT = means.T
             mew = meansT[k]
-
-            #print(Xtest[0])
-            #print(mew)        
-            #print(mdet)
  
             firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
             secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
-            #print("Mult")
-            #print(np.linalg.det(secondHalf))
-
             ks[k] = np.linalg.det(secondHalf)
            
-        print(ks)
-        index = np.argmax(ks)
-        print(index+1)
-        print(int(ytest[n]))      
-     
-    #print("Y")
-    #print(ytest[2])
+        index = np.argmax(ks) 
 
-    #Define Function Matrix
-    #functionMatrix = np.zeros(((numK,numK,50)))
-    #for k in range(numK):
-    #    j = k
-    #    for j in range(numK):
-    #        testReturn = 1
-    #        linespace = np.linspace(0,10,50,endpoint=True)
+        if int(ytest[n]) == index+1:
+           acc = acc+1
 
-            #SIGMA
-    #        covmat = np.zeros((numD,numD))
-    #        covmat = covmats[k]
-    #        mdet = np.linalg.det(covmat)            
-
-            #MEW
-    #        mew = np.zeros(numD)
-    #        meansT = means.T
-    #        mew = meansT[k]
-
-            #FUNCTION MATRIX
-    #        for x in range(50):
-    #            firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2)) 
-    #            secondHalf = firstHalf * np.e**((-1*(linespace[x]-mew).T * covmat**-1 * (linespace[x]-mew))/2)
-    #            functionMatrix[k][j][x] = firstHalf * secondHalf       
-
-   
-
-    testLabel = np.zeros(numN)
-    for n in range(numN):
-        scoreKeeper = np.zeros(numK)
-        for k in range(numK):
-            j = k
-            for j in range(numK):
-                #boundryLine = functionMatrix[k][j]
-                #if (x,y) is within boundary
-                #       scoreKeeper[k]++
-                #else 
-                #       scoreKeeper[j]++
-                test = 1
-                
-        score = 0
-        classK = 0
-        for k in range(numK):
-            if scoreKeeper[k] > score:
-               classK = k
-               score = scoreKeeper[k]
-        testLabel[n] = classK
-  
-    correctCount = 0
-    for n in range(numN):
-        if testLabel[n] == ytest[n]:
-              correctCount = correctCount + 1
-
-    acc = correctCount/numN
+    acc = acc/n
 
 
     return acc
@@ -302,9 +217,9 @@ def mapNonLinear(x,p):
 X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')            
 
 # LDA
-#means,covmat = ldaLearn(X,y)
-#ldaacc = ldaTest(means,covmat,Xtest,ytest)
-#print('LDA Accuracy = '+str(ldaacc))
+means,covmat = ldaLearn(X,y)
+ldaacc = ldaTest(means,covmat,Xtest,ytest)
+print('LDA Accuracy = '+str(ldaacc))
 # QDA
 means,covmats = qdaLearn(X,y)
 qdaacc = qdaTest(means,covmats,Xtest,ytest)
