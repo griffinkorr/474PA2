@@ -60,7 +60,10 @@ def qdaLearn(X,y):
                 if int(y[n]-1) == k:
                    covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
             covmats[k][d][d] = covmats[k][d][d] / countKs[k]
-                    
+    
+    print(means)
+    print(covmats)
+                
     return means,covmats
 
 def ldaLearn(X,y):
@@ -216,11 +219,9 @@ def learnOLERegression(X,y):
     # w = d x 1                                                                
     # IMPLEMENT THIS METHOD 
             
-    w = (X.T * X)
     
-
-    print(w)
-                                  
+    w = (((X.T).dot(X))**-1).dot((X.T.dot(y)))
+                              
     return w
 
 def learnRidgeERegression(X,y,lambd):
@@ -243,7 +244,27 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    return rmse
+
+    def minimizeFunc(w,Xtest,ytest):
+
+    #Declare Array Dimension Sizes
+        numN = Xtest.shape[0]
+        sum = 0    
+
+        for n in range(numN):
+            sum = sum + (ytest[n] - w.T.dot(Xtest[n]))**2
+
+        rmse = (1/numN) * sqrt(sum) 
+
+        return rmse
+
+    args = (Xtest,ytest)
+    opts = {'maxiter' :50}
+    
+    nn_params = minimize(minimizeFunc, w, jac=False, args=args, method='CG', options=opts)
+
+    print(nn_params)
+
 
 def regressionObjVal(w, X, y, lambd):
 
