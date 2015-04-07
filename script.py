@@ -221,7 +221,26 @@ def learnOLERegression(X,y):
             
     
     w = (((X.T).dot(X))**-1).dot((X.T.dot(y)))
-                              
+    
+    def minimizeFunc1(w,X,y):
+
+    #Declare Array Dimension Sizes
+        numN = X.shape[0]
+        sum = 0
+
+        for n in range(numN):
+            sum = sum + (y[n] - w.T.dot(X[n]))**2
+
+        #print(sum/2)
+        return sum/2
+
+    args = (X,y)
+    opts = {'maxiter' :50, 'disp' :True}
+    #print(w)
+
+    nn_params = minimize(minimizeFunc1, w, jac=False, args=args, method='Powell', options=opts)                          
+    print(nn_params)
+    print(w)
     return w
 
 def learnRidgeERegression(X,y,lambd):
@@ -245,25 +264,25 @@ def testOLERegression(w,Xtest,ytest):
     
     # IMPLEMENT THIS METHOD
 
-    def minimizeFunc(w,Xtest,ytest):
+    #def minimizeFunc2(w,Xtest,ytest):
 
     #Declare Array Dimension Sizes
-        numN = Xtest.shape[0]
-        sum = 0    
+    numN = Xtest.shape[0]
+    sum = 0    
 
-        for n in range(numN):
-            sum = sum + (ytest[n] - w.T.dot(Xtest[n]))**2
+    for n in range(numN):
+        sum = sum + (ytest[n] - w.T.dot(Xtest[n]))**2
 
-        rmse = (1/numN) * sqrt(sum) 
+    rmse = (1/numN) * sqrt(sum) 
 
-        return rmse
+    return rmse
 
-    args = (Xtest,ytest)
-    opts = {'maxiter' :50}
+    #args = (Xtest,ytest)
+    #opts = {'maxiter' :50}
     
-    nn_params = minimize(minimizeFunc, w, jac=False, args=args, method='CG', options=opts)
+    #nn_params = minimize(minimizeFunc2, w, jac=False, args=args, method='CG', options=opts)
 
-    print(nn_params)
+    #print(nn_params)
 
 
 def regressionObjVal(w, X, y, lambd):
