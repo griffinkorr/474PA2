@@ -61,8 +61,8 @@ def qdaLearn(X,y):
                    covmats[k][d][d] = covmats[k][d][d] + ((X[n][d] - means[d][k]) * (X[n][d] - means[d][k]))
             covmats[k][d][d] = covmats[k][d][d] / countKs[k]
     
-    print(means)
-    print(covmats)
+    #print(means)
+    #print(covmats)
                 
     return means,covmats
 
@@ -132,7 +132,7 @@ def ldaTest(means,covmat,Xtest,ytest):
     numD = Xtest.shape[1]
     numK = means.shape[1]
 
-    print(covmat)
+    #print(covmat)
 
     acc = 0
     for n in range(numN):
@@ -151,7 +151,7 @@ def ldaTest(means,covmat,Xtest,ytest):
                #print(mew)
 
                firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
-               secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
+               secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * np.linalg.inv(covmat) * (Xtest[n]-mew))/2)
                ks[k] = np.linalg.det(secondHalf)
 
         index = np.argmax(ks)
@@ -159,7 +159,7 @@ def ldaTest(means,covmat,Xtest,ytest):
         if int(ytest[n]) == index+1:
            acc = acc+1
 
-    acc = acc/n
+    acc = acc/float(numN)
 
 
     return acc
@@ -181,7 +181,10 @@ def qdaTest(means,covmats,Xtest,ytest):
     numK = means.shape[1]
 
     #print(covmats)
-
+    for k in range(numK):
+        covmat = covmats[k]
+        #print(covmat)
+        #print(covmat)
     acc = 0
     for n in range(numN):
         ks = np.zeros(numK)
@@ -191,6 +194,9 @@ def qdaTest(means,covmats,Xtest,ytest):
             covmat = covmats[k]
             mdet = np.linalg.det(covmat)
 
+            #print("-------------------------")
+            #print(np.linalg.inv(covmat))
+            #print("#############################")
             if mdet != 0:
 
                 mew = np.zeros(numD)
@@ -198,15 +204,16 @@ def qdaTest(means,covmats,Xtest,ytest):
                 mew = meansT[k]
  
                 firstHalf = 1 / ((2*pi)**(numD/2)*(mdet)**(1/2))
-                secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * covmat**-1 * (Xtest[n]-mew))/2)
+                secondHalf = firstHalf * np.e**((-1*(Xtest[n]-mew).T * np.linalg.inv(covmat) * (Xtest[n]-mew))/2)
                 ks[k] = np.linalg.det(secondHalf)
-           
+        #print(ks)
         index = np.argmax(ks) 
 
         if int(ytest[n]) == index+1:
            acc = acc+1
 
-    acc = acc/n
+    acc = acc/float(numN)
+
 
 
     return acc
@@ -220,30 +227,12 @@ def learnOLERegression(X,y):
     # IMPLEMENT THIS METHOD 
             
     
-    w = (((X.T).dot(X))**-1).dot((X.T.dot(y)))
-    
-    def minimizeFunc1(w,X,y):
-
-    #Declare Array Dimension Sizes
-        numN = X.shape[0]
-        sum = 0
-
-        for n in range(numN):
-            sum = sum + (y[n] - w.T.dot(X[n]))**2
-
-        #print(sum/2)
-        return sum/2
-
-    args = (X,y)
-    opts = {'maxiter' :50, 'disp' :True}
+    w = (np.linalg.inv((X.T).dot(X))).dot((X.T.dot(y)))
+   
     #print(w)
-
-    nn_params = minimize(minimizeFunc1, w, jac=False, args=args, method='Powell', options=opts)                          
-    print(nn_params)
-    print(w)
     return w
 
-def learnRidgeERegression(X,y,lambd):
+def learnRidgeRegression(X,y,lambd):
     # Inputs:
     # X = N x d                                                               
     # y = N x 1 
@@ -251,7 +240,24 @@ def learnRidgeERegression(X,y,lambd):
     # Output:                                                                  
     # w = d x 1                                                                
 
-    # IMPLEMENT THIS METHOD                                                   
+    # IMPLEMENT THIS METHOD    
+    
+    #Declare Matrix Axis Sizes
+    numN = X.shape[0]
+    numD = X.shape[1]    
+
+    Id = np.zeros((numD,numD))
+    for i in range(numD):
+        for j in range(numD):
+            if i == j:
+               Id[i][j] = 1
+
+    #print(lambd)
+    w = np.linalg.inv(lambd*Id + (X.T).dot(X)).dot((X.T.dot(y)))
+
+    #print(w)
+   
+                                               
     return w
 
 def testOLERegression(w,Xtest,ytest):
@@ -264,26 +270,18 @@ def testOLERegression(w,Xtest,ytest):
     
     # IMPLEMENT THIS METHOD
 
-    #def minimizeFunc2(w,Xtest,ytest):
-
     #Declare Array Dimension Sizes
     numN = Xtest.shape[0]
     sum = 0    
 
+    #Calculate RMSE
     for n in range(numN):
         sum = sum + (ytest[n] - w.T.dot(Xtest[n]))**2
 
-    rmse = (1/numN) * sqrt(sum) 
+    rmse = (1/float(numN) * sqrt(sum) )
+
 
     return rmse
-
-    #args = (Xtest,ytest)
-    #opts = {'maxiter' :50}
-    
-    #nn_params = minimize(minimizeFunc2, w, jac=False, args=args, method='CG', options=opts)
-
-    #print(nn_params)
-
 
 def regressionObjVal(w, X, y, lambd):
 
@@ -307,7 +305,7 @@ def mapNonLinear(x,p):
 
 # Problem 1
 # load the sample data                                                                 
-X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')            
+X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))            
 
 # LDA
 means,covmat = ldaLearn(X,y)
@@ -320,7 +318,7 @@ print('QDA Accuracy = '+str(qdaacc))
 
 # Problem 2
 
-X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'),encoding = 'latin1')   
+X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))   
 # add intercept
 X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
@@ -347,7 +345,7 @@ plt.plot(lambdas,rmses3)
 
 # Problem 4
 lambdas = np.linspace(0, 1.0, num=k)
-k = 21
+k = 101
 i = 0
 rmses4 = np.zeros((k,1))
 opts = {'maxiter' : 50}    # Preferred value.                                                
@@ -358,7 +356,7 @@ for lambd in lambdas:
     rmses4[i] = testOLERegression(w_l.x,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses4)
-
+plt.show()
 
 # Problem 5
 pmax = 7
